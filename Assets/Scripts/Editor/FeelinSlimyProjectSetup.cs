@@ -53,6 +53,11 @@ namespace FeelinSlimy.Editor
                 exitSprite
             );
 
+            if (File.Exists(SlimeArtWiring.ArtFolder + "/slime_animations.json"))
+            {
+                SlimeArtWiring.WireAll();
+            }
+
             Scene activeScene = SceneManager.GetActiveScene();
             if (!string.IsNullOrEmpty(activeScene.path))
             {

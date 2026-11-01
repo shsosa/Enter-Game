@@ -15,7 +15,7 @@ MonoBehaviour:
   levelName: LevelSettings
   description: 
   playerMovement:
-    moveSpeed: 7.2
+    moveSpeed: 1
     jumpForce: 13.2
     coyoteTime: 0.12
     jumpBufferTime: 0.14
@@ -27,11 +27,11 @@ MonoBehaviour:
     groundCheckSize: {x: 0.75, y: 0.18}
   slimeTrail:
     leaveSlimeResidue: 1
-    residueSpeedMultiplier: 1.48
+    residueSpeedMultiplier: 100
     normalSurfaceSpeedMultiplier: 0.65
-    residueBuffPersistence: 0.45
-    residueLifetime: 18
-    residueSpawnSpacing: 0.38
+    residueBuffPersistence: 0.05
+    residueLifetime: 0.01
+    residueSpawnSpacing: 0.01
     wallClimbSpeed: 6.4
     residueWallClimbMultiplier: 1.38
     wallSlideSpeed: 1.8
@@ -65,8 +65,8 @@ MonoBehaviour:
   playerVisuals:
     calmSlimeColor: {r: 0.28, g: 0.88, b: 0.95, a: 1}
     angerSlimeColor: {r: 1, g: 0.28, b: 0.18, a: 1}
-    customCalmSprite: {fileID: 21300000, guid: f54fb49af3473e8459e847051fb2acc1, type: 3}
-    customAngrySprite: {fileID: 21300000, guid: 46a06ac8e3c2d754788248724109f65e, type: 3}
+    customCalmSprite: {fileID: 21300000, guid: 4b66c3a220d5204499ec1c0be2022064, type: 3}
+    customAngrySprite: {fileID: 21300000, guid: fb4d5050224b69a4cba7013904cdc7e3, type: 3}
   enemy:
     enemyName: Gloom Brute
     enemyColor: {r: 0.52, g: 0.22, b: 0.68, a: 1}

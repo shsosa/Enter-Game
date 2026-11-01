@@ -119,6 +119,16 @@ namespace FeelinSlimy
         public Sprite customCalmSprite;
         [Tooltip("Optional custom sprite for the angry powered-up Slime.")]
         public Sprite customAngrySprite;
+        [Tooltip("Tint the sprite with the calm/anger color. Turn off for pre-colored art (e.g. the animated pixel-art Slime).")]
+        public bool tintSpriteWithSlimeColor = true;
+
+        public event System.Action Jumped;
+        public event System.Action<float> Landed;
+        public event System.Action StompStarted;
+        public event System.Action StompImpacted;
+        public event System.Action Hurt;
+        public event System.Action PowerAcquired;
+        public event System.Action PlayerReset;
 
         public int CurrentHealth { get; private set; }
         public bool IsGrounded { get; private set; }
@@ -246,15 +256,14 @@ namespace FeelinSlimy
                 _spriteRenderer.sprite = customAngrySprite != null
                     ? customAngrySprite
                     : ProceduralVisuals.GetSlimeSprite(true);
-                _spriteRenderer.color = angerSlimeColor;
             }
             else
             {
                 _spriteRenderer.sprite = customCalmSprite != null
                     ? customCalmSprite
                     : ProceduralVisuals.GetSlimeSprite(false);
-                _spriteRenderer.color = calmSlimeColor;
             }
+            _spriteRenderer.color = SpriteTint;
             _spriteRenderer.sortingOrder = 10;
         }
 
@@ -400,6 +409,7 @@ namespace FeelinSlimy
         }
 
         private Color CurrentSlimeColor => hasAngerStomp ? angerSlimeColor : calmSlimeColor;
+        private Color SpriteTint => tintSpriteWithSlimeColor ? CurrentSlimeColor : Color.white;
 
         private void UpdateResidueTrailAndBuffs()
         {
@@ -480,6 +490,7 @@ namespace FeelinSlimy
             if (intensity < 0.08f) return;
 
             ApplySquashImpulse(new Vector2(1f + intensity * 0.42f, 1f - intensity * 0.34f));
+            Landed?.Invoke(intensity);
 
             Vector2 feetPos = (Vector2)transform.position + groundCheckOffset;
             if (leaveSlimeResidue)
@@ -616,6 +627,7 @@ namespace FeelinSlimy
                     _lastGroundedTime = -10f;
                     IsGrounded = false;
                     ApplySquashImpulse(new Vector2(0.72f, 1.36f));
+                    Jumped?.Invoke();
 
                     if (leaveSlimeResidue)
                     {
@@ -642,6 +654,7 @@ namespace FeelinSlimy
                     _wallJumpLockTimer = 0.15f;
                     IsWallClimbing = false;
                     ApplySquashImpulse(new Vector2(0.7f, 1.38f));
+                    Jumped?.Invoke();
 
                     Vector2 wallContact = (Vector2)transform.position + new Vector2(wallDir * wallCheckDistance, 0f);
                     if (leaveSlimeResidue)
@@ -758,6 +771,7 @@ namespace FeelinSlimy
             }
 
             ApplyVisualState();
+            PowerAcquired?.Invoke();
 
             GameObject ringObj = new GameObject("PowerAcquireRing");
             ringObj.transform.position = transform.position;
@@ -773,6 +787,7 @@ namespace FeelinSlimy
         private IEnumerator ExecuteAngerStompRoutine()
         {
             IsStomping = true;
+            StompStarted?.Invoke();
             if (RetroSoundEffects.Instance != null)
             {
                 RetroSoundEffects.Instance.PlayStompLaunch();
@@ -822,6 +837,7 @@ namespace FeelinSlimy
             IsStomping = false;
             _nextStompAllowedTime = Time.time + stompCooldown;
             ApplySquashImpulse(new Vector2(1.48f, 0.56f));
+            StompImpacted?.Invoke();
 
             Vector2 feetPos = (Vector2)transform.position + groundCheckOffset;
             if (leaveSlimeResidue)
@@ -882,6 +898,7 @@ namespace FeelinSlimy
             _knockbackTimer = 0.22f;
             _rb.linearVelocity = knockbackVelocity;
             ApplySquashImpulse(new Vector2(1.38f, 0.65f));
+            Hurt?.Invoke();
             SlimeDropletEffect.SpawnSplash(transform.position, CurrentSlimeColor, 7, 3.0f, 6.5f, knockbackVelocity.normalized);
 
             if (RetroSoundEffects.Instance != null)
@@ -909,7 +926,7 @@ namespace FeelinSlimy
                 _spriteRenderer.flipX = _horizontalInput < 0f;
             }
 
-            Color targetBaseColor = hasAngerStomp ? angerSlimeColor : calmSlimeColor;
+            Color targetBaseColor = SpriteTint;
             if (IsOnResidueBoosted || IsOnSlimyWall)
             {
                 float glow = (Mathf.Sin(Time.time * 14f) * 0.5f + 0.5f) * 0.16f;
@@ -1046,6 +1063,7 @@ namespace FeelinSlimy
             }
 
             ApplyVisualState();
+            PlayerReset?.Invoke();
         }
 
         private void OnDrawGizmosSelected()

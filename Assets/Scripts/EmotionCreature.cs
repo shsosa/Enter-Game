@@ -400,7 +400,7 @@ namespace FeelinSlimy
             float clampedWidth = Mathf.Clamp(widthScale, 0.65f, 2.2f);
             _targetScale = new Vector3(0.82f * clampedWidth, 0.56f * Mathf.Lerp(1f, 1.25f, (clampedWidth - 0.65f) * 0.5f), 1f);
             EffectiveRadius = 0.48f * clampedWidth;
-            _lifetime = Mathf.Max(2f, lifetime);
+            _lifetime = Mathf.Max(0.05f, lifetime);
             _elapsed = 0f;
         }
 

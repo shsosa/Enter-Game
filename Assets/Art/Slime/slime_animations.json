@@ -1,0 +1,85 @@
+{
+  "frameSize": 112,
+  "pixelsPerUnit": 64,
+  "pivot": "center",
+  "animations": [
+    {
+      "name": "idle",
+      "fps": 10,
+      "loop": true,
+      "frames": 8
+    },
+    {
+      "name": "move",
+      "fps": 12,
+      "loop": true,
+      "frames": 8
+    },
+    {
+      "name": "jump",
+      "fps": 15,
+      "loop": false,
+      "frames": 5
+    },
+    {
+      "name": "rise",
+      "fps": 12,
+      "loop": true,
+      "frames": 4
+    },
+    {
+      "name": "fall",
+      "fps": 12,
+      "loop": true,
+      "frames": 4
+    },
+    {
+      "name": "land",
+      "fps": 15,
+      "loop": false,
+      "frames": 8
+    },
+    {
+      "name": "stomp_windup",
+      "fps": 16,
+      "loop": false,
+      "frames": 4
+    },
+    {
+      "name": "stomp_fall",
+      "fps": 16,
+      "loop": true,
+      "frames": 2
+    },
+    {
+      "name": "stomp_impact",
+      "fps": 15,
+      "loop": false,
+      "frames": 9
+    },
+    {
+      "name": "hurt",
+      "fps": 14,
+      "loop": false,
+      "frames": 5
+    },
+    {
+      "name": "absorb",
+      "fps": 12,
+      "loop": true,
+      "frames": 6
+    },
+    {
+      "name": "death",
+      "fps": 12,
+      "loop": false,
+      "frames": 10
+    },
+    {
+      "name": "powerup",
+      "fps": 14,
+      "loop": false,
+      "frames": 10
+    }
+  ]
+}
