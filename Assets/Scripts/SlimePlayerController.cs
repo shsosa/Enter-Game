@@ -37,6 +37,8 @@ namespace FeelinSlimy
         public bool leaveSlimeResidue = true;
         [Tooltip("Speed multiplier when moving over slimy residue on floors/platforms.")]
         public float residueSpeedMultiplier = 1.48f;
+        [Tooltip("Speed multiplier when moving on regular (non-slimy) surfaces. Lower = slower.")]
+        public float normalSurfaceSpeedMultiplier = 0.65f;
         [Tooltip("Duration (in seconds) that the slimy speed & climb buff lingers after touching residue.")]
         public float residueBuffPersistence = 0.45f;
         [Tooltip("How long (in seconds) each slime residue patch stays on the ground/wall.")]
@@ -49,6 +51,8 @@ namespace FeelinSlimy
         public float residueWallClimbMultiplier = 1.38f;
         [Tooltip("Controlled downward slide speed when clinging to a wall without climbing up.")]
         public float wallSlideSpeed = 1.8f;
+        [Tooltip("Slide speed multiplier on walls coated with slime residue. Lower = slower slide.")]
+        public float residueWallSlideMultiplier = 0.15f;
         [Tooltip("Horizontal and vertical launch velocity when jumping off a wall.")]
         public Vector2 wallJumpForce = new Vector2(10.2f, 13.4f);
         [Tooltip("Horizontal offset from the Slime center for left/right wall detection.")]
@@ -529,7 +533,7 @@ namespace FeelinSlimy
 
             Vector2 vel = _rb.linearVelocity;
 
-            float speedMultiplier = IsOnResidueBoosted ? residueSpeedMultiplier : 1f;
+            float speedMultiplier = IsOnResidueBoosted ? residueSpeedMultiplier : normalSurfaceSpeedMultiplier;
             float targetSpeedX = _horizontalInput * moveSpeed * speedMultiplier;
             float accelRate;
             if (IsGrounded)
@@ -574,7 +578,7 @@ namespace FeelinSlimy
                 }
                 else
                 {
-                    float slideCap = IsOnSlimyWall ? wallSlideSpeed * 0.35f : wallSlideSpeed;
+                    float slideCap = IsOnSlimyWall ? wallSlideSpeed * residueWallSlideMultiplier : wallSlideSpeed;
                     vel.y = Mathf.Max(vel.y, -slideCap);
                 }
             }
