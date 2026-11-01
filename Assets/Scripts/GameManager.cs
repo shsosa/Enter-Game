@@ -14,6 +14,10 @@ namespace FeelinSlimy
 
         public static GameManager Instance { get; private set; }
 
+        [Header("Level Settings")]
+        [Tooltip("Optional Level Settings asset. When assigned, it overrides player, enemy, creature, exit, camera and layout values on Play, and edits made while playing are applied live.")]
+        public LevelSettings levelSettings;
+
         [Header("Scene References")]
         [Tooltip("Reference to the Slime player in the test room.")]
         public SlimePlayerController player;
@@ -29,6 +33,12 @@ namespace FeelinSlimy
         public bool smoothFollowPlayer = true;
         [Tooltip("Minimum and maximum X coordinates for the camera in the test room.")]
         public Vector2 cameraBoundsX = new Vector2(-2.5f, 4.5f);
+        [Tooltip("Orthographic size (zoom) of the camera. Bigger = see more of the room.")]
+        public float cameraSize = 6.2f;
+        [Tooltip("Vertical position of the camera.")]
+        public float cameraHeight = 0.8f;
+        [Tooltip("Background color behind the room.")]
+        public Color backgroundColor = new Color(0.11f, 0.14f, 0.21f, 1f);
 
         public GameState CurrentState { get; private set; } = GameState.Playing;
         public bool IsEnemyDefeated => largeEnemy != null && largeEnemy.IsDefeated;
@@ -62,10 +72,29 @@ namespace FeelinSlimy
             Instance = this;
         }
 
+        private void OnEnable()
+        {
+            LevelSettings.Changed += OnLevelSettingsChanged;
+        }
+
+        private void OnDisable()
+        {
+            LevelSettings.Changed -= OnLevelSettingsChanged;
+        }
+
         private void Start()
         {
             AutoWireReferences();
+            if (levelSettings != null) levelSettings.ApplyToScene(true);
             ConfigureCamera();
+        }
+
+        private void OnLevelSettingsChanged(LevelSettings changed)
+        {
+            if (Application.isPlaying && Instance == this && changed == levelSettings)
+            {
+                levelSettings.ApplyToScene(false);
+            }
         }
 
         public void AutoWireReferences()
@@ -86,12 +115,27 @@ namespace FeelinSlimy
             _mainCamera = Camera.main;
             if (_mainCamera == null) return;
 
-            _mainCamera.orthographic = true;
-            _mainCamera.orthographicSize = 6.2f;
-            _mainCamera.clearFlags = CameraClearFlags.SolidColor;
-            _mainCamera.backgroundColor = new Color(0.11f, 0.14f, 0.21f, 1f);
-            _cameraBasePos = new Vector3(0f, 0.8f, -10f);
+            _cameraBasePos = new Vector3(0f, cameraHeight, -10f);
+            ApplyCameraLook();
             _mainCamera.transform.position = _cameraBasePos;
+        }
+
+        public void ApplyCameraLook()
+        {
+            Camera cam = _mainCamera != null ? _mainCamera : Camera.main;
+            if (cam == null) return;
+
+            cam.orthographic = true;
+            cam.orthographicSize = cameraSize;
+            cam.clearFlags = CameraClearFlags.SolidColor;
+            cam.backgroundColor = backgroundColor;
+            _cameraBasePos.y = cameraHeight;
+
+            if (!Application.isPlaying)
+            {
+                Vector3 camPos = cam.transform.position;
+                cam.transform.position = new Vector3(camPos.x, cameraHeight, camPos.z);
+            }
         }
 
         private void Update()
@@ -151,7 +195,7 @@ namespace FeelinSlimy
 
         public void NotifyEnemyDefeated(LargeEnemy enemy)
         {
-            ShowTemporaryHint("Gloom Brute crushed! Head right into the glowing Exit Portal!", 6f);
+            ShowTemporaryHint($"{enemy.enemyName} crushed! Head right into the glowing Exit Portal!", 6f);
         }
 
         public void TriggerVictory()
@@ -275,7 +319,8 @@ namespace FeelinSlimy
             GUI.color = prevColor;
 
             string enemyStatus = IsEnemyDefeated ? "Defeated!" : "Patrolling Exit";
-            GUI.Label(new Rect(30, 128, 345, 22), $"Gloom Brute: {enemyStatus}", _bodyStyle);
+            string enemyLabel = largeEnemy != null ? largeEnemy.enemyName : "Gloom Brute";
+            GUI.Label(new Rect(30, 128, 345, 22), $"{enemyLabel}: {enemyStatus}", _bodyStyle);
 
             float rightX = Screen.width - 336;
             GUI.Box(new Rect(rightX, 16, 320, 126), GUIContent.none, _panelStyle);

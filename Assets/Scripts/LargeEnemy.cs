@@ -23,6 +23,16 @@ namespace FeelinSlimy
         [Tooltip("Horizontal movement speed while patrolling.")]
         public float patrolSpeed = 2.4f;
 
+        [Header("Chase Ability")]
+        [Tooltip("If enabled, the enemy charges toward the Slime when it comes close (stays inside its patrol zone).")]
+        public bool chasePlayer = false;
+        [Tooltip("Horizontal distance at which the enemy notices and chases the Slime.")]
+        public float chaseRange = 5f;
+        [Tooltip("Maximum vertical distance at which the enemy still notices the Slime.")]
+        public float chaseVerticalTolerance = 2.5f;
+        [Tooltip("Horizontal movement speed while chasing.")]
+        public float chaseSpeed = 4f;
+
         [Header("Combat & Damage Settings")]
         [Tooltip("Damage dealt to the Slime on normal contact.")]
         public int contactDamage = 1;
@@ -30,6 +40,12 @@ namespace FeelinSlimy
         public float knockbackForceX = 7.5f;
         [Tooltip("Upward knockback force applied to the Slime on normal contact.")]
         public float knockbackForceY = 5.5f;
+
+        [Header("Weaknesses")]
+        [Tooltip("If enabled, landing directly on the enemy with the Anger Stomp defeats it. Otherwise the Slime bounces off harmlessly.")]
+        public bool defeatedByDirectStomp = true;
+        [Tooltip("If enabled, the Anger Stomp landing shockwave defeats the enemy when it is inside the radius.")]
+        public bool defeatedByShockwave = true;
 
         public bool IsDefeated { get; private set; }
 
@@ -77,7 +93,15 @@ namespace FeelinSlimy
             }
         }
 
-        private void ApplyVisuals()
+        public void SetSpawnPosition(Vector3 position)
+        {
+            position.z = transform.position.z;
+            _initialPosition = position;
+            transform.position = position;
+            if (Application.isPlaying && _rb != null) _rb.position = position;
+        }
+
+        public void ApplyVisuals()
         {
             if (_spriteRenderer == null) return;
             if (customSprite != null)
@@ -105,7 +129,18 @@ namespace FeelinSlimy
             float maxX = _initialPosition.x + patrolDistance;
 
             Vector2 pos = _rb.position;
-            pos.x += _patrolDirection * patrolSpeed * Time.fixedDeltaTime;
+            float speed = patrolSpeed;
+            SlimePlayerController target = GameManager.Instance != null ? GameManager.Instance.player : null;
+            if (chasePlayer && target != null)
+            {
+                Vector2 toPlayer = (Vector2)target.transform.position - pos;
+                if (Mathf.Abs(toPlayer.x) <= chaseRange && Mathf.Abs(toPlayer.y) <= chaseVerticalTolerance)
+                {
+                    _patrolDirection = toPlayer.x >= 0f ? 1 : -1;
+                    speed = Mathf.Abs(toPlayer.x) > 0.15f ? chaseSpeed : 0f;
+                }
+            }
+            pos.x += _patrolDirection * speed * Time.fixedDeltaTime;
 
             if (pos.x >= maxX)
             {
@@ -152,7 +187,7 @@ namespace FeelinSlimy
 
             if (slime.IsStomping)
             {
-                DefeatByStomp(slime.transform.position);
+                if (defeatedByDirectStomp) DefeatByStomp(slime.transform.position);
                 slime.BounceAfterStompKill();
             }
             else

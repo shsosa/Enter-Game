@@ -66,7 +66,14 @@ namespace FeelinSlimy
             if (_collider != null) _collider.isTrigger = true;
         }
 
-        private void ApplyVisuals()
+        public void SetSpawnPosition(Vector3 position)
+        {
+            position.z = transform.position.z;
+            _initialPosition = position;
+            transform.position = position;
+        }
+
+        public void ApplyVisuals()
         {
             if (_spriteRenderer == null) return;
             if (customSprite != null)

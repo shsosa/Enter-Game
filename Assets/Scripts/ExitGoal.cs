@@ -47,7 +47,7 @@ namespace FeelinSlimy
             if (_collider != null) _collider.isTrigger = true;
         }
 
-        private void ApplyVisuals()
+        public void ApplyVisuals()
         {
             if (_spriteRenderer == null) return;
             if (customSprite != null)

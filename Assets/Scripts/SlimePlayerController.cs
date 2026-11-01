@@ -91,6 +91,8 @@ namespace FeelinSlimy
         [Header("3. Anger Stomp Ability (Press S / Down / Shift)")]
         [Tooltip("Whether the Slime has absorbed the Anger Creature and unlocked Anger Stomp.")]
         public bool hasAngerStomp = false;
+        [Tooltip("If enabled, the Slime starts the level (and every restart) with Anger Stomp already unlocked.")]
+        public bool startWithAngerStomp = false;
         [Tooltip("Downward slam velocity during the Anger Stomp.")]
         public float stompDownwardSpeed = 22f;
         [Tooltip("Radius of the shockwave on Stomp impact that crushes nearby Large Enemies.")]
@@ -174,7 +176,22 @@ namespace FeelinSlimy
                 _lastGroundResiduePos = _initialPosition;
                 _lastWallResiduePos = _initialPosition;
                 CurrentHealth = maxHealth;
+                if (startWithAngerStomp) hasAngerStomp = true;
                 SetupTetherLine();
+            }
+        }
+
+        public void SetSpawnPosition(Vector3 position)
+        {
+            position.z = transform.position.z;
+            _initialPosition = position;
+            _lastGroundResiduePos = position;
+            _lastWallResiduePos = position;
+            transform.position = position;
+            if (Application.isPlaying && _rb != null)
+            {
+                _rb.position = position;
+                _rb.linearVelocity = Vector2.zero;
             }
         }
 
@@ -835,7 +852,7 @@ namespace FeelinSlimy
             for (int i = 0; i < hits.Length; i++)
             {
                 LargeEnemy enemy = hits[i].GetComponent<LargeEnemy>();
-                if (enemy != null && !enemy.IsDefeated)
+                if (enemy != null && !enemy.IsDefeated && enemy.defeatedByShockwave)
                 {
                     enemy.DefeatByStomp(transform.position);
                 }
@@ -982,7 +999,7 @@ namespace FeelinSlimy
                 _stompRoutine = null;
             }
 
-            hasAngerStomp = false;
+            hasAngerStomp = startWithAngerStomp;
             IsStomping = false;
             IsTouchingWall = false;
             IsWallClimbing = false;
